@@ -1,0 +1,185 @@
+{
+  "$comment": "SpringBoot + Vue3 全栈开发助手 —— 流水线机器可读定义。v1.1.0：新增模糊点裁定表、模块级编译门禁、造数幂等、本地演示 profile 兜底、测试报告映射/定性/偏差模板（来自首次真实项目迭代的教训）。status.json 更新时整文件重写。",
+  "skill": {
+    "name": "springboot-vue3-fullstack-dev",
+    "version": "1.1.0",
+    "pipeline_mode": "strict_sequential",
+    "skip_forbidden": true,
+    "changelog": [
+      { "version": "1.1.0", "date": "2026-10-24", "changes": "stage_1 增加 E-xx 裁定表；stage_2 错误码排版规则；stage_3 造数幂等；stage_4 模块级 mvn -q compile 门禁；stage_5 本地演示 profile + 前端构建验证；stage_6 用例映射/缺陷定性/环境偏差模板；status.json 整文件重写" },
+      { "version": "1.0.0", "date": "2026-10-24", "changes": "初始版本" }
+    ]
+  },
+  "tech_stack": {
+    "backend": {
+      "framework": "SpringBoot 3.x",
+      "java": "17",
+      "web": "Spring Web",
+      "orm": "MyBatis-Plus",
+      "database": "MySQL 8",
+      "build": "Maven"
+    },
+    "frontend": {
+      "framework": "Vue 3 (Composition API + <script setup>)",
+      "bundler": "Vite",
+      "state": "Pinia",
+      "router": "Vue Router",
+      "ui": "Element Plus",
+      "http": "Axios"
+    },
+    "auth": "JWT Bearer Token",
+    "note": "用户项目已有技术栈时以用户为准；六步流程与接口文档强制模板不变。"
+  },
+  "runtime_profiles": {
+    "production": "MySQL 8，连接信息全部来自环境变量（DB_URL/DB_USERNAME/DB_PASSWORD），建表走 sql/init.sql",
+    "local_demo": "目标环境无可用 MySQL 时的兜底：H2 MySQL 兼容模式（文件库）+ 幂等建表脚本（schema-h2.sql）+ 独立 profile（如 application-h2.yml）；H2 依赖需 runtime scope；README 写明两种模式切换步骤",
+    "rule": "兜底 profile 是演示便利，不改变生产配置；测试报告必须注明实际使用的模式"
+  },
+  "api_convention": {
+    "style": "RESTful",
+    "prefix": "/api",
+    "response_wrapper": {
+      "code": "int",
+      "msg": "string",
+      "data": "object|null"
+    },
+    "headers": {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer <token>"
+    }
+  },
+  "standard_error_codes": [
+    { "code": 200, "meaning": "成功" },
+    { "code": 401, "meaning": "未授权：未登录或 token 失效" },
+    { "code": 403, "meaning": "无权限：已登录但角色权限不足" },
+    { "code": 404, "meaning": "资源不存在" },
+    { "code": 500, "meaning": "服务异常" }
+  ],
+  "error_code_extension": "业务错误码可按需扩展（建议按模块分段 1xxx/2xxx…），新增错误码前必须先更新接口文档错误码表；排版：全局错误码总表在文档头部列一次，每个接口仅列适用子集与触发场景。",
+  "security_baseline": [
+    "所有 SQL 必须参数绑定（#{} / 预编译），禁止拼接、format 组装 SQL",
+    "服务端发起外部请求仅允许 http/https；请求前校验 host，拒绝 localhost、环回、私有与保留地址",
+    "凭据只从环境变量或密钥服务读取；源码、示例、测试不得包含可用凭据字面量",
+    "初始口令未配置环境变量时生成随机值并打印启动日志（一次性展示），而不是把默认口令写进源码"
+  ],
+  "api_doc_template": {
+    "note": "每个接口按四部分编写，任何模块不可省略，可适当扩充；排版与 JSON 示例约束见 hard_constraints。",
+    "overview": [
+      "接口名称",
+      "接口描述",
+      "业务作用",
+      "请求协议 HTTP/HTTPS",
+      "请求方式 GET/POST/PUT/DELETE",
+      "基础地址 baseUrl",
+      "接口版本",
+      "接口状态(开发中/已上线)",
+      "鉴权方式(Bearer Token/Token/AppKey)"
+    ],
+    "request": [
+      "请求路径(统一 /api 前缀)",
+      "Headers: Content-Type、Authorization",
+      "参数表格列: 参数名/类型/是否必填/位置(path|query|body)/说明/示例",
+      "请求体 JSON 示例"
+    ],
+    "response": [
+      "统一返回结构 code/msg/data",
+      "响应字段表格列: 字段名/类型/说明/是否可为null",
+      "成功响应 JSON 示例",
+      "失败响应 JSON 示例"
+    ],
+    "error_codes": [
+      "错误码列表: 全局表(200/401/403/404/500 + 业务扩展码)在文档头部列一次；本接口仅列适用子集与触发场景"
+    ]
+  },
+  "test_guidance": {
+    "seed_idempotency": "测试造数必须幂等：先查后插、已存在即复用；同一用例内多次获取 Token/账号不得产生重复行（否则唯一查询命中多行引发 500 假失败）",
+    "test_credentials": "测试口令仅限一次性测试库，不复用任何环境真实凭据",
+    "case_to_method_mapping": "一个测试方法可承载多条文档用例（如期限断言并入主流程），但测试报告必须有 用例编号↔测试方法 映射表并注明合并/拆分"
+  },
+  "hard_constraints": [
+    "接口遵循 RESTful 规范，统一 /api 前缀",
+    "接口文档为项目基准：调整接口必须先更新接口文档，再改代码",
+    "接口文档完成后逐条核对需求，保证功能点全覆盖并附功能点→接口映射表",
+    "JSON 示例格式规范，可直接复制调试",
+    "表格排版规整，可读性强；错误码全局表只列一次",
+    "后续开发与测试均以接口文档为唯一基准，不可私自改动接口定义"
+  ],
+  "status_template": {
+    "project": "",
+    "created_at": "",
+    "updated_at": "",
+    "current_stage": "stage_1",
+    "stages": {
+      "stage_1": { "name": "业务边界文档", "completed": false, "artifacts": [] },
+      "stage_2": { "name": "接口文档", "completed": false, "artifacts": [], "coverage_check_passed": false },
+      "stage_3": { "name": "测试文档", "completed": false, "artifacts": [] },
+      "stage_4": { "name": "后端接口实现", "completed": false, "artifacts": [], "implemented_apis": [] },
+      "stage_5": { "name": "整合封装完整系统", "completed": false, "artifacts": [] },
+      "stage_6": { "name": "接口测试与反馈", "completed": false, "artifacts": [], "pass_rate": null }
+    }
+  },
+  "stages": [
+    {
+      "order": 1,
+      "id": "stage_1",
+      "title": "业务边界文档",
+      "output": "docs/01-business-boundary.md",
+      "required_sections": ["业务背景与目标", "业务范围(功能点编号 F-xx)", "排除范围", "角色定义", "业务约束", "模糊点裁定表(编号 E-xx，供后续文档引用)", "术语表"],
+      "gate": "文档存在且包含全部 required_sections；功能点逐条编号 F-xx；需求含糊/冲突点已有 E-xx 裁定",
+      "next": "stage_2"
+    },
+    {
+      "order": 2,
+      "id": "stage_2",
+      "title": "接口文档",
+      "output": "docs/02-api-spec.md",
+      "gate": "每个接口均套用 api_doc_template 四部分；末尾附功能点→接口映射表；全局错误码总表在头部列一次、接口内仅列适用子集；status.json 中 stage_2.coverage_check_passed=true",
+      "forbidden": "覆盖核对未通过不得进入 stage_3",
+      "next": "stage_3"
+    },
+    {
+      "order": 3,
+      "id": "stage_3",
+      "title": "测试文档",
+      "output": "docs/03-test-cases.md",
+      "gate": "接口文档中每个接口均有正常用例+异常场景+边界值；用例编号 TC-<模块>-<序号>；每条用例可直接执行；写明造数要求（幂等、口令仅限一次性测试库）",
+      "next": "stage_4"
+    },
+    {
+      "order": 4,
+      "id": "stage_4",
+      "title": "逐个分步实现后端接口",
+      "output": "后端源代码 + docs/04-dev-progress.md",
+      "gate": "每个模块（entity→mapper→service→controller 闭环）完成后 mvn -q compile 通过，不允许攒到最后一次性编译；接口文档中每个接口均已实现并在进度文档勾销；路径/方法/参数/返回/错误码与接口文档逐字段一致；security_baseline 全部满足",
+      "forbidden": "禁止一次性批量生成全部接口；实现与文档不一致且未先更新文档",
+      "next": "stage_5"
+    },
+    {
+      "order": 5,
+      "id": "stage_5",
+      "title": "整合封装为完整系统",
+      "output": "可运行的完整工程 + sql/init.sql + 本地演示profile(H2 MySQL兼容+幂等建表脚本) + README.md + Vue3 前端对接",
+      "gate": "鉴权/统一返回/全局异常/跨域/分页就绪；init.sql 可执行；无可用 MySQL 时本地演示 profile 可一键启动；README 含两种模式启动步骤与环境变量清单；前端 axios 拦截器按 code 统一处理；前端通过 npm run build（或 dev 启动）验证",
+      "next": "stage_6"
+    },
+    {
+      "order": 6,
+      "id": "stage_6",
+      "title": "对照测试文档开展接口测试",
+      "output": "docs/05-test-report.md",
+      "gate": "覆盖 03-test-cases.md 全部用例并记录实际结果；含用例编号↔测试方法映射表（合并/拆分注明）；修复记录按 产品代码缺陷/测试基建缺陷/测试数据缺陷 定性并标注是否引起文档变更；环境偏差（替代库/替代测试方式）注明原因与切回生产步骤；总结含通过率与文档偏差",
+      "next": null
+    }
+  ],
+  "artifact_paths": {
+    "docs_dir": "docs",
+    "status_file": ".fullstack/status.json",
+    "boundary": "docs/01-business-boundary.md",
+    "api_spec": "docs/02-api-spec.md",
+    "test_cases": "docs/03-test-cases.md",
+    "dev_progress": "docs/04-dev-progress.md",
+    "test_report": "docs/05-test-report.md",
+    "sql_init": "sql/init.sql",
+    "readme": "README.md"
+  }
+}

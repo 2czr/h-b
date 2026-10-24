@@ -1,0 +1,16 @@
+{
+  "name": "fullstack-pipeline-mcp",
+  "version": "1.2.0",
+  "description": "springboot-vue3-fullstack-dev 技能配套 MCP：六步流水线阶段门禁 / 状态跟踪 / 接口文档体检 / 功能点覆盖率核对（零依赖，无需 npm install）",
+  "type": "module",
+  "main": "index.mjs",
+  "bin": {
+    "fullstack-pipeline-mcp": "./index.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node index.mjs"
+  }
+}
